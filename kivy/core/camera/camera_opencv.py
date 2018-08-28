@@ -118,8 +118,11 @@ class CameraOpenCV(CameraBase):
             # get fps
             self.fps = self._device.get(PROPERTY_FPS)
 
-        if self.fps <= 0:
-            self.fps = 1 / 30.
+        # Convert fps to frame sampling interval
+        if self.fps >= 1:
+            self.fps = 1 / self.fps
+        elif self.fps <= 0:
+            self.fps = 1 / 30
 
         if not self.stopped:
             self.start()
@@ -140,8 +143,7 @@ class CameraOpenCV(CameraBase):
             except AttributeError:
                 # On OSX/Linux there is no imageData attribute but a tostring()
                 # method.
-                # frame is already of type ndarray which can be reshaped to 1-d.
-                # Either frame.tostring() or frame.tobytes() is slow.
+                # cv2 frame is of type ndarray which can be reshaped to 1-D.
                 self._buffer = frame.reshape(-1)
             self._copy_to_gpu()
         except:
